@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Flight Expense Log</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #121a2f;
+      --card2: #1c2745;
+      --text: #f8fafc;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --accent2: #2563eb;
+      --ok: #16a34a;
+      --danger: #dc2626;
+      --border: #334155;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 14px;
+      padding-bottom: 90px;
+    }
+
+    h1, h2, h3 { margin: 0 0 10px 0; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .hidden { display: none !important; }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .row > * {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #082f49;
+      font-weight: 800;
+    }
+
+    .secondary {
+      background: #334155;
+      color: white;
+      font-weight: 700;
+    }
+
+    .danger {
+      background: var(--danger);
+      color: white;
+      font-weight: 700;
+    }
+
+    .success {
+      background: var(--ok);
+      color: white;
+      font-weight: 700;
+    }
+
+    .option-btn {
+      background: var(--accent2);
+      color: white;
+      border: 2px solid #60a5fa;
+      border-radius: 18px;
+      min-height: 90px;
+      font-size: 22px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 14px;
+      transition: 0.12s ease;
+    }
+
+    .option-btn:hover {
+      filter: brightness(1.05);
+    }
+
+    .option-btn:active {
+      transform: scale(0.96);
+    }
+
+    .option-btn.selected {
+      outline: 3px solid #38bdf8;
+      background: #0ea5e9;
+      color: #082f49;
+      transform: scale(0.97);
+      box-shadow: 0 0 0 2px #38bdf8 inset;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #09101d;
+      color: white;
+      padding: 12px;
+      font-size: 16px;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      background: #0b1220;
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .report-item {
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .summary-box {
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .pin-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .pin-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 20px;
+    }
+
+    .pin-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .pin-btn {
+      min-height: 62px;
+      font-size: 24px;
+      font-weight: 800;
+      border-radius: 16px;
+      background: #1f2937;
+      color: white;
+      border: 1px solid var(--border);
+    }
+
+    .footer-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(8, 12, 24, 0.95);
+      border-top: 1px solid var(--border);
+      padding: 10px;
+      display: flex;
+      gap: 8px;
+      z-index: 50;
+    }
+
+    .footer-nav button {
+      flex: 1;
+      padding: 12px;
+      font-size: 14px;
+      border-radius: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .option-btn { min-height: 96px; font-size: 22px; }
+      .row > * { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="pinScreen" class="pin-wrap">
+    <div class="pin-card">
+      <h2>Flight Expense Log</h2>
+      <div class="muted">Local app • Data stays on this device</div>
+      <div style="margin-top:16px;">
+        <label>PIN</label>
+        <input id="pinDisplay" type="password" readonly placeholder="Enter PIN" />
+      </div>
+      <div class="pin-grid">
+        <button class="pin-btn" onclick="pressPin('1')">1</button>
+        <button class="pin-btn" onclick="pressPin('2')">2</button>
+        <button class="pin-btn" onclick="pressPin('3')">3</button>
+        <button class="pin-btn" onclick="pressPin('4')">4</button>
+        <button class="pin-btn" onclick="pressPin('5')">5</button>
+        <button class="pin-btn" onclick="pressPin('6')">6</button>
+        <button class="pin-btn" onclick="pressPin('7')">7</button>
+        <button class="pin-btn" onclick="pressPin('8')">8</button>
+        <button class="pin-btn" onclick="pressPin('9')">9</button>
+        <button class="pin-btn secondary" onclick="clearPin()">C</button>
+        <button class="pin-btn" onclick="pressPin('0')">0</button>
+        <button class="pin-btn primary" onclick="submitPin()">OK</button>
+      </div>
+      <div id="pinMessage" class="muted" style="margin-top:14px;"></div>
+    </div>
+  </div>
+
+  <div id="mainApp" class="hidden">
+    <div class="app">
+      <div class="topbar">
+        <div>
+          <h1>Flight Expense Log</h1>
+          <div class="muted">Local only • Saved in this device/browser</div>
+        </div>
+        <div class="row" style="flex: 0 0 auto;">
+          <button class="secondary" onclick="showView('newReportView')">New Report</button>
+          <button class="secondary" onclick="renderHistory(); showView('historyView')">History</button>
+          <button class="secondary" onclick="renderSummary(); showView('summaryView')">Summary</button>
+        </div>
+      </div>
+
+      <div id="newReportView">
+        <div class="card">
+          <div class="section-title">1. Aircraft</div>
+          <div class="grid grid-2" id="aircraftGrid"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">2. Expense Type</div>
+          <div class="grid grid-3" id="expenseTypeGrid"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">3. Payment Method</div>
+          <div class="grid grid-2" id="paymentMethodGrid"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">4. Details</div>
+
+          <div class="row">
+            <div>
+              <label>Fecha</label>
+              <input type="date" id="dateInput" />
+            </div>
+            <div>
+              <label>Vuelo</label>
+              <input type="text" id="routeInput" placeholder="MMIO-KHOU" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <label>Monto</label>
+              <input type="number" id="amountInput" placeholder="0.00" step="0.01" />
+            </div>
+            <div>
+              <label>Currency</label>
+              <select id="currencyInput">
+                <option value="MXN">MXN</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <label>Pasajero</label>
+              <input type="text" id="paxInput" placeholder="Iniciales o nombre" />
+            </div>
+            <div>
+              <label>Capitán</label>
+              <input type="text" id="captainInput" placeholder="Captain name" />
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Notas</label>
+            <textarea id="notesInput" placeholder="Optional notes"></textarea>
+          </div>
+
+          <div style="margin-top:12px;" class="muted" id="selectionPreview">No selections yet.</div>
+
+          <div class="row" style="margin-top:14px;">
+            <button class="primary" onclick="saveReport()">Save Report</button>
+            <button class="secondary" onclick="resetForm()">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="historyView" class="hidden">
+        <div class="card">
+          <div class="section-title">History</div>
+
+          <div class="row">
+            <div>
+              <label>From</label>
+              <input type="date" id="filterFrom" />
+            </div>
+            <div>
+              <label>To</label>
+              <input type="date" id="filterTo" />
+            </div>
+            <div>
+              <label>Aircraft</label>
+              <select id="filterAircraft">
+                <option value="">All</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <button class="secondary" onclick="renderHistory()">Apply Filters</button>
+            <button class="danger" onclick="clearAllReports()">Delete All</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div id="historyList"></div>
+        </div>
+      </div>
+
+      <div id="summaryView" class="hidden">
+        <div class="card">
+          <div class="section-title">Summary</div>
+
+          <div class="row">
+            <div>
+              <label>From</label>
+              <input type="date" id="summaryFrom" />
+            </div>
+            <div>
+              <label>To</label>
+              <input type="date" id="summaryTo" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <button class="secondary" onclick="renderSummary()">Refresh Summary</button>
+            <button class="success" onclick="exportCSVByRange()">Export Range CSV</button>
+            <button class="success" onclick="exportCSV()">Export All CSV</button>
+          </div>
+        </div>
+
+        <div class="grid grid-3">
+          <div class="summary-box">
+            <h3>Total Reports</h3>
+            <div id="sumReports">0</div>
+          </div>
+          <div class="summary-box">
+            <h3>Total MXN</h3>
+            <div id="sumMXN">0.00</div>
+          </div>
+          <div class="summary-box">
+            <h3>Total USD</h3>
+            <div id="sumUSD">0.00</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <h3>By Expense Type</h3>
+          <div id="sumByType"></div>
+        </div>
+
+        <div class="card">
+          <h3>By Aircraft</h3>
+          <div id="sumByAircraft"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-nav">
+      <button class="secondary" onclick="showView('newReportView')">New</button>
+      <button class="secondary" onclick="renderHistory(); showView('historyView')">History</button>
+      <button class="secondary" onclick="renderSummary(); showView('summaryView')">Summary</button>
+      <button class="secondary" onclick="lockApp()">Lock</button>
+    </div>
+  </div>
+
+  <script>
+    const AIRCRAFTS = ["N330WS", "N588KC", "N861NG", "N102AR", "Gastos Operativos"];
+    const EXPENSE_TYPES = ["Comida", "Carro de renta", "Taxi", "Uber", "Combustible", "Otro"];
+    const PAYMENT_METHODS = ["Efectivo", "DolarApp MX", "DolarApp USD", "TC Santander", "AMEX", "IBC"];
+
+    const STORAGE_KEY = "flight_expense_reports_v3";
+    const PIN_KEY = "flight_expense_local_pin";
+    const SESSION_UNLOCK_KEY = "flight_expense_unlocked";
+
+    let currentSelection = {
+      aircraft: "",
+      expenseType: "",
+      paymentMethod: ""
+    };
+
+    let pinBuffer = "";
+
+    function todayISO() {
+      const d = new Date();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${d.getFullYear()}-${month}-${day}`;
+    }
+
+    function init() {
+      setupPin();
+      document.getElementById("dateInput").value = todayISO();
+      renderOptions("aircraftGrid", AIRCRAFTS, "aircraft");
+      renderOptions("expenseTypeGrid", EXPENSE_TYPES, "expenseType");
+      renderOptions("paymentMethodGrid", PAYMENT_METHODS, "paymentMethod");
+      populateAircraftFilters();
+      renderHistory();
+      renderSummary();
+      updatePreview();
+      autoLockEvents();
+    }
+
+    function setupPin() {
+      let savedPin = localStorage.getItem(PIN_KEY);
+      if (!savedPin) {
+        localStorage.setItem(PIN_KEY, "1234");
+        savedPin = "1234";
+        document.getElementById("pinMessage").textContent = "Default PIN is 1234";
+      }
+
+      if (sessionStorage.getItem(SESSION_UNLOCK_KEY) === "1") {
+        unlockApp();
+      }
+    }
+
+    function pressPin(digit) {
+      if (pinBuffer.length >= 6) return;
+      pinBuffer += digit;
+      document.getElementById("pinDisplay").value = pinBuffer;
+    }
+
+    function clearPin() {
+      pinBuffer = "";
+      document.getElementById("pinDisplay").value = "";
+    }
+
+    function submitPin() {
+      const savedPin = localStorage.getItem(PIN_KEY);
+      if (pinBuffer === savedPin) {
+        sessionStorage.setItem(SESSION_UNLOCK_KEY, "1");
+        unlockApp();
+        clearPin();
+      } else {
+        document.getElementById("pinMessage").textContent = "Incorrect PIN";
+        clearPin();
+      }
+    }
+
+    function unlockApp() {
+      document.getElementById("pinScreen").classList.add("hidden");
+      document.getElementById("mainApp").classList.remove("hidden");
+    }
+
+    function lockApp() {
+      sessionStorage.removeItem(SESSION_UNLOCK_KEY);
+      document.getElementById("mainApp").classList.add("hidden");
+      document.getElementById("pinScreen").classList.remove("hidden");
+      document.getElementById("pinMessage").textContent = "";
+      clearPin();
+    }
+
+    function autoLockEvents() {
+      let timer;
+      function resetTimer() {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          if (!document.getElementById("mainApp").classList.contains("hidden")) {
+            lockApp();
+          }
+        }, 5 * 60 * 1000);
+      }
+      ["click", "touchstart", "keydown"].forEach(evt => document.addEventListener(evt, resetTimer));
+      resetTimer();
+    }
+
+    function renderOptions(containerId, items, key) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+      items.forEach(item => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = item;
+        btn.onclick = () => {
+          currentSelection[key] = item;
+          highlightSelection(containerId, item);
+          updatePreview();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function highlightSelection(containerId, value) {
+      const container = document.getElementById(containerId);
+      [...container.children].forEach(btn => btn.classList.remove("selected"));
+      const selectedBtn = [...container.children].find(btn => btn.textContent === value);
+      if (selectedBtn) selectedBtn.classList.add("selected");
+    }
+
+    function updatePreview() {
+      document.getElementById("selectionPreview").textContent =
+        `Aircraft: ${currentSelection.aircraft || "-"} | Expense: ${currentSelection.expenseType || "-"} | Payment: ${currentSelection.paymentMethod || "-"}`;
+    }
+
+    function getReports() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    }
+
+    function saveReports(reports) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+    }
+
+    function saveReport() {
+      const date = document.getElementById("dateInput").value;
+      const route = document.getElementById("routeInput").value.trim();
+      const amount = parseFloat(document.getElementById("amountInput").value);
+      const currency = document.getElementById("currencyInput").value;
+      const pax = document.getElementById("paxInput").value.trim();
+      const captain = document.getElementById("captainInput").value.trim();
+      const notes = document.getElementById("notesInput").value.trim();
+
+      if (!currentSelection.aircraft) return alert("Select aircraft.");
+      if (!currentSelection.expenseType) return alert("Select expense type.");
+      if (!currentSelection.paymentMethod) return alert("Select payment method.");
+      if (!date) return alert("Select date.");
+      if (isNaN(amount) || amount <= 0) return alert("Enter valid amount.");
+
+      const report = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        date,
+        aircraft: currentSelection.aircraft,
+        expenseType: currentSelection.expenseType,
+        paymentMethod: currentSelection.paymentMethod,
+        route,
+        amount,
+        currency,
+        pax,
+        captain,
+        notes,
+        createdAt: new Date().toISOString()
+      };
+
+      const reports = getReports();
+      reports.unshift(report);
+      saveReports(reports);
+
+      alert("Saved locally on this device.");
+      resetForm(false);
+      renderHistory();
+      renderSummary();
+    }
+
+    function resetForm(resetDate = true) {
+      currentSelection = { aircraft: "", expenseType: "", paymentMethod: "" };
+      document.getElementById("routeInput").value = "";
+      document.getElementById("amountInput").value = "";
+      document.getElementById("currencyInput").value = "MXN";
+      document.getElementById("paxInput").value = "";
+      document.getElementById("captainInput").value = "";
+      document.getElementById("notesInput").value = "";
+      if (resetDate) document.getElementById("dateInput").value = todayISO();
+
+      renderOptions("aircraftGrid", AIRCRAFTS, "aircraft");
+      renderOptions("expenseTypeGrid", EXPENSE_TYPES, "expenseType");
+      renderOptions("paymentMethodGrid", PAYMENT_METHODS, "paymentMethod");
+      updatePreview();
+    }
+
+    function showView(viewId) {
+      document.getElementById("newReportView").classList.add("hidden");
+      document.getElementById("historyView").classList.add("hidden");
+      document.getElementById("summaryView").classList.add("hidden");
+      document.getElementById(viewId).classList.remove("hidden");
+    }
+
+    function populateAircraftFilters() {
+      const select = document.getElementById("filterAircraft");
+      select.innerHTML = `<option value="">All</option>`;
+      AIRCRAFTS.forEach(ac => {
+        const opt = document.createElement("option");
+        opt.value = ac;
+        opt.textContent = ac;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderHistory() {
+      const list = document.getElementById("historyList");
+      const reports = getReports();
+      const from = document.getElementById("filterFrom").value;
+      const to = document.getElementById("filterTo").value;
+      const aircraft = document.getElementById("filterAircraft").value;
+
+      const filtered = reports.filter(r => {
+        const okFrom = !from || r.date >= from;
+        const okTo = !to || r.date <= to;
+        const okAircraft = !aircraft || r.aircraft === aircraft;
+        return okFrom && okTo && okAircraft;
+      });
+
+      if (!filtered.length) {
+        list.innerHTML = `<div class="muted">No reports found.</div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(r => `
+        <div class="report-item">
+          <strong>${r.date} • ${escapeHtml(r.aircraft)} • ${escapeHtml(r.expenseType)}</strong><br/>
+          <span class="pill">${escapeHtml(r.paymentMethod)}</span>
+          <span class="pill">${r.amount} ${escapeHtml(r.currency)}</span>
+          ${r.route ? `<span class="pill">${escapeHtml(r.route)}</span>` : ""}
+          ${r.pax ? `<span class="pill">PAX: ${escapeHtml(r.pax)}</span>` : ""}
+          ${r.captain ? `<span class="pill">CAPT: ${escapeHtml(r.captain)}</span>` : ""}
+          ${r.notes ? `<div class="muted" style="margin-top:8px;">${escapeHtml(r.notes)}</div>` : ""}
+        </div>
+      `).join("");
+    }
+
+    function renderSummary() {
+      const reports = getReports();
+      const from = document.getElementById("summaryFrom").value;
+      const to = document.getElementById("summaryTo").value;
+
+      const filtered = reports.filter(r => {
+        const okFrom = !from || r.date >= from;
+        const okTo = !to || r.date <= to;
+        return okFrom && okTo;
+      });
+
+      let totalMXN = 0;
+      let totalUSD = 0;
+      const byType = {};
+      const byAircraft = {};
+
+      filtered.forEach(r => {
+        if (r.currency === "MXN") totalMXN += Number(r.amount);
+        if (r.currency === "USD") totalUSD += Number(r.amount);
+        byType[r.expenseType] = (byType[r.expenseType] || 0) + Number(r.amount);
+        byAircraft[r.aircraft] = (byAircraft[r.aircraft] || 0) + Number(r.amount);
+      });
+
+      document.getElementById("sumReports").textContent = filtered.length;
+      document.getElementById("sumMXN").textContent = totalMXN.toFixed(2);
+      document.getElementById("sumUSD").textContent = totalUSD.toFixed(2);
+
+      document.getElementById("sumByType").innerHTML = Object.keys(byType).length
+        ? Object.entries(byType).map(([k, v]) => `<div class="pill">${escapeHtml(k)}: ${v.toFixed(2)}</div>`).join("")
+        : `<div class="muted">No data.</div>`;
+
+      document.getElementById("sumByAircraft").innerHTML = Object.keys(byAircraft).length
+        ? Object.entries(byAircraft).map(([k, v]) => `<div class="pill">${escapeHtml(k)}: ${v.toFixed(2)}</div>`).join("")
+        : `<div class="muted">No data.</div>`;
+    }
+
+    function exportCSV() {
+      const reports = getReports();
+      if (!reports.length) return alert("No reports to export.");
+      downloadCSV(reports, "reporte_contadora_all.csv");
+    }
+
+    function exportCSVByRange() {
+      const reports = getReports();
+      const from = document.getElementById("summaryFrom").value;
+      const to = document.getElementById("summaryTo").value;
+
+      const filtered = reports.filter(r => {
+        const okFrom = !from || r.date >= from;
+        const okTo = !to || r.date <= to;
+        return okFrom && okTo;
+      });
+
+      if (!filtered.length) return alert("No reports in selected range.");
+      downloadCSV(filtered, "reporte_contadora_range.csv");
+    }
+
+    function downloadCSV(data, filename) {
+      const headers = [
+        "VUELO",
+        "FECHA",
+        "CONCEPTO",
+        "EFECTIVO",
+        "DOLAR APP MX",
+        "DOLAR APP USD",
+        "TC SANTANDER",
+        "AMEX",
+        "IBC",
+        "CAPITAN",
+        "PASAJERO",
+        "AVION"
+      ];
+
+      const rows = data.map(r => {
+        let efectivo = "";
+        let dmx = "";
+        let dusd = "";
+        let tc = "";
+        let amex = "";
+        let ibc = "";
+
+        switch (r.paymentMethod) {
+          case "Efectivo":
+            efectivo = r.amount;
+            break;
+          case "DolarApp MX":
+            dmx = r.amount;
+            break;
+          case "DolarApp USD":
+            dusd = r.amount;
+            break;
+          case "TC Santander":
+            tc = r.amount;
+            break;
+          case "AMEX":
+            amex = r.amount;
+            break;
+          case "IBC":
+            ibc = r.amount;
+            break;
+        }
+
+        return [
+          r.route || "",
+          r.date,
+          r.expenseType,
+          efectivo,
+          dmx,
+          dusd,
+          tc,
+          amex,
+          ibc,
+          r.captain || "",
+          r.pax || "",
+          r.aircraft || ""
+        ];
+      });
+
+      const csv = [
+        headers.join(","),
+        ...rows.map(row => row.map(csvEscape).join(","))
+      ].join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function csvEscape(value) {
+      const str = String(value ?? "");
+      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function clearAllReports() {
+      if (!confirm("Delete all reports from this device/browser?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      renderHistory();
+      renderSummary();
+      alert("All reports deleted.");
+    }
+
+    init();
+  </script>
+</body>
+</html>
