@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expense App</title>
+
+<style>
+body { margin:0; font-family:Arial; background:#0b1020; color:white; }
+.container { padding:15px; padding-bottom:80px; }
+
+.card { background:#121a2f; padding:15px; border-radius:12px; margin-bottom:15px; }
+
+button {
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  font-weight:bold;
+}
+
+.option-btn {
+  background:#2563eb;
+  color:white;
+  width:48%;
+  margin:1%;
+}
+
+.selected { background:#1d4ed8; }
+
+.footer {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#111827;
+  display:flex;
+}
+
+.footer button {
+  flex:1;
+  padding:12px;
+  background:#1f2937;
+  color:white;
+}
+
+input, select {
+  width:100%;
+  padding:12px;
+  margin-top:5px;
+  border-radius:10px;
+  border:none;
+}
+
+.hidden { display:none; }
+</style>
+</head>
+
+<body>
+
+<div id="pinScreen" class="container">
+<h2>PIN</h2>
+<input id="pinInput" type="password">
+<button onclick="login()">Entrar</button>
+<p id="pinMsg"></p>
+</div>
+
+<div id="app" class="hidden">
+
+<div id="newView" class="container">
+<h2>Nuevo Gasto</h2>
+
+<div class="card">
+<h3>Avión</h3>
+<div id="aircraft"></div>
+</div>
+
+<div class="card">
+<h3>Concepto</h3>
+<div id="concept"></div>
+</div>
+
+<div class="card">
+<h3>Pago</h3>
+<div id="payment"></div>
+</div>
+
+<div class="card">
+<input id="route" placeholder="VUELO MMIO-KHOU">
+<input id="amount" type="number" placeholder="Monto">
+<input id="date" type="date">
+<input id="captain" placeholder="Capitán">
+<input id="pax" placeholder="Pasajero">
+<br><br>
+<button onclick="save()">Guardar</button>
+</div>
+</div>
+
+<div id="historyView" class="container hidden">
+<h2>Historial</h2>
+<div id="history"></div>
+</div>
+
+<div id="summaryView" class="container hidden">
+<h2>Resumen</h2>
+<div id="summary"></div>
+<button onclick="exportCSV()">Exportar Excel</button>
+</div>
+
+<div class="footer">
+<button onclick="show('newView')">Nuevo</button>
+<button onclick="loadHistory(); show('historyView')">Historial</button>
+<button onclick="loadSummary(); show('summaryView')">Resumen</button>
+</div>
+
+</div>
+
+<script>
+
+const PIN="1234";
+const STORAGE="data";
+
+const AIRCRAFTS=["N330WS","N588KC","N861NG","N102AR","Gastos Operativos"];
+const CONCEPTS=["Comida","Carro de renta","Taxi","Uber","Combustible","Otro"];
+const PAYMENTS=["Efectivo","DolarApp MX","DolarApp USD","TC Santander","AMEX","IBC"];
+
+let selA="", selC="", selP="";
+
+function login(){
+if(pinInput.value===PIN){
+pinScreen.style.display="none";
+app.classList.remove("hidden");
+init();
+}else pinMsg.innerText="PIN incorrecto";
+}
+
+function init(){
+date.value=new Date().toISOString().split("T")[0];
+
+AIRCRAFTS.forEach(a=>{
+let b=document.createElement("button");
+b.innerText=a;
+b.className="option-btn";
+b.onclick=()=>{selA=a; mark(aircraft,b);};
+aircraft.appendChild(b);
+});
+
+CONCEPTS.forEach(c=>{
+let b=document.createElement("button");
+b.innerText=c;
+b.className="option-btn";
+b.onclick=()=>{selC=c; mark(concept,b);};
+concept.appendChild(b);
+});
+
+PAYMENTS.forEach(p=>{
+let b=document.createElement("button");
+b.innerText=p;
+b.className="option-btn";
+b.onclick=()=>{selP=p; mark(payment,b);};
+payment.appendChild(b);
+});
+}
+
+function mark(container,btn){
+[...container.children].forEach(x=>x.classList.remove("selected"));
+btn.classList.add("selected");
+}
+
+function save(){
+let data=JSON.parse(localStorage.getItem(STORAGE)||"[]");
+
+data.push({
+route:route.value,
+date:date.value,
+concept:selC,
+payment:selP,
+amount:amount.value,
+captain:captain.value,
+pax:pax.value,
+aircraft:selA
+});
+
+localStorage.setItem(STORAGE,JSON.stringify(data));
+alert("Guardado");
+}
+
+function loadHistory(){
+let data=JSON.parse(localStorage.getItem(STORAGE)||"[]");
+history.innerHTML=data.map(d=>`
+<div class="card">
+${d.date} - ${d.aircraft}<br>
+${d.concept} - $${d.amount}
+</div>`).join("");
+}
+
+function loadSummary(){
+let data=JSON.parse(localStorage.getItem(STORAGE)||"[]");
+
+let total=0;
+data.forEach(d=>total+=Number(d.amount));
+
+summary.innerHTML="Total: $"+total;
+}
+
+function exportCSV(){
+let data=JSON.parse(localStorage.getItem(STORAGE)||"[]");
+
+let headers=["VUELO","FECHA","CONCEPTO","EFECTIVO","DOLAR APP MX","DOLAR APP USD","TC SANTANDER","AMEX","IBC","CAPITAN","PASAJERO","AVION"];
+
+let rows=data.map(r=>{
+let e="",mx="",usd="",tc="",amex="",ibc="";
+
+switch(r.payment){
+case "Efectivo": e=r.amount; break;
+case "DolarApp MX": mx=r.amount; break;
+case "DolarApp USD": usd=r.amount; break;
+case "TC Santander": tc=r.amount; break;
+case "AMEX": amex=r.amount; break;
+case "IBC": ibc=r.amount; break;
+}
+
+return [r.route,r.date,r.concept,e,mx,usd,tc,amex,ibc,r.captain,r.pax,r.aircraft];
+});
+
+let csv=[headers.join(",")].concat(rows.map(r=>r.join(","))).join("\n");
+
+let blob=new Blob([csv]);
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="reporte.csv";
+a.click();
+}
+
+function show(id){
+newView.classList.add("hidden");
+historyView.classList.add("hidden");
+summaryView.classList.add("hidden");
+document.getElementById(id).classList.remove("hidden");
+}
+
+</script>
+
+</body>
+</html>
