@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expense App</title>
+
+<style>
+body { font-family: Arial; background:#0b1020; color:white; padding:20px; }
+.card { background:#121a2f; padding:15px; border-radius:12px; margin-bottom:15px; }
+button { padding:12px; margin:5px; border-radius:10px; border:none; font-weight:bold; }
+.option-btn { background:#2563eb; color:white; }
+.primary { background:#38bdf8; }
+</style>
+</head>
+
+<body>
+
+<div id="pinScreen">
+<h2>Enter PIN</h2>
+<input id="pinDisplay" type="password" placeholder="Enter PIN">
+<br><br>
+<button onclick="submitPin()">OK</button>
+<p id="pinMessage"></p>
+</div>
+
+<div id="app" style="display:none;">
+
+<h2>Nuevo Gasto</h2>
+
+<div class="card">
+<h3>Matrícula</h3>
+<div id="aircraftGrid"></div>
+</div>
+
+<div class="card">
+<h3>Concepto</h3>
+<div id="expenseGrid"></div>
+</div>
+
+<div class="card">
+<h3>Método de Pago</h3>
+<div id="paymentGrid"></div>
+</div>
+
+<div class="card">
+<input id="route" placeholder="VUELO (MMIO-KHOU)"><br><br>
+<input id="amount" type="number" placeholder="Monto"><br><br>
+<input id="date" type="date"><br><br>
+<input id="captain" placeholder="Capitán"><br><br>
+<input id="pax" placeholder="Pasajero"><br><br>
+
+<button class="primary" onclick="save()">Guardar</button>
+<button onclick="exportCSV()">Exportar</button>
+</div>
+
+</div>
+
+<script>
+
+const AIRCRAFTS = ["N330WS","N588KC","N861NG","N102AR","Gastos Operativos"];
+const EXPENSES = ["Comida","Carro de renta","Taxi","Uber","Combustible","Otro"];
+const PAYMENTS = ["Efectivo","DolarApp MX","DolarApp USD","TC Santander","AMEX","IBC"];
+
+let selAircraft="", selExpense="", selPayment="";
+
+const STORAGE = "app_data";
+const PIN = "1234";
+
+function init(){
+document.getElementById("date").value = new Date().toISOString().split('T')[0];
+
+AIRCRAFTS.forEach(a=>{
+let b=document.createElement("button");
+b.innerText=a;
+b.className="option-btn";
+b.onclick=()=>selAircraft=a;
+aircraftGrid.appendChild(b);
+});
+
+EXPENSES.forEach(e=>{
+let b=document.createElement("button");
+b.innerText=e;
+b.className="option-btn";
+b.onclick=()=>selExpense=e;
+expenseGrid.appendChild(b);
+});
+
+PAYMENTS.forEach(p=>{
+let b=document.createElement("button");
+b.innerText=p;
+b.className="option-btn";
+b.onclick=()=>selPayment=p;
+paymentGrid.appendChild(b);
+});
+}
+
+function submitPin(){
+let p=document.getElementById("pinDisplay").value;
+if(p===PIN){
+document.getElementById("pinScreen").style.display="none";
+document.getElementById("app").style.display="block";
+init();
+}else{
+pinMessage.innerText="PIN incorrecto";
+}
+}
+
+function save(){
+let data = JSON.parse(localStorage.getItem(STORAGE) || "[]");
+
+data.push({
+route: route.value,
+date: date.value,
+concept: selExpense,
+payment: selPayment,
+amount: amount.value,
+captain: captain.value,
+pax: pax.value,
+aircraft: selAircraft
+});
+
+localStorage.setItem(STORAGE, JSON.stringify(data));
+alert("Guardado");
+}
+
+function exportCSV(){
+let data = JSON.parse(localStorage.getItem(STORAGE) || "[]");
+
+let headers = ["VUELO","FECHA","CONCEPTO","EFECTIVO","DOLAR APP MX","DOLAR APP USD","TC SANTANDER","AMEX","IBC","CAPITAN","PASAJERO","AVION"];
+
+let rows = data.map(r=>{
+let e="",mx="",usd="",tc="",amex="",ibc="";
+
+switch(r.payment){
+case "Efectivo": e=r.amount; break;
+case "DolarApp MX": mx=r.amount; break;
+case "DolarApp USD": usd=r.amount; break;
+case "TC Santander": tc=r.amount; break;
+case "AMEX": amex=r.amount; break;
+case "IBC": ibc=r.amount; break;
+}
+
+return [
+r.route,
+r.date,
+r.concept,
+e,mx,usd,tc,amex,ibc,
+r.captain,
+r.pax,
+r.aircraft
+];
+});
+
+let csv=[headers.join(",")].concat(rows.map(r=>r.join(","))).join("\n");
+
+let blob=new Blob([csv]);
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="reporte.csv";
+a.click();
+}
+
+</script>
+
+</body>
+</html>
